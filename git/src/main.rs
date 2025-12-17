@@ -1,6 +1,7 @@
+use anyhow::Context;
+use clap::{Parser, Subcommand};
 use std::fs;
 
-use clap::{Parser, Subcommand};
 #[derive(Parser, Debug)]
 #[command()]
 struct Args {
@@ -13,15 +14,16 @@ enum Command {
     Init,
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     match args.command {
         Command::Init => {
-            fs::create_dir(".git").unwrap();
-            fs::create_dir(".git/objects").unwrap();
-            fs::create_dir(".git/refs").unwrap();
-            fs::write(".git/HEAD", "ref: refs/heads/main").unwrap();
+            fs::create_dir(".git").context("create .git directory")?;
+            fs::create_dir(".git/objects").context("create .git/objects directory")?;
+            fs::create_dir(".git/refs").context("create .git/refs directory")?;
+            fs::write(".git/HEAD", "ref: refs/heads/main").context("create .git/HEAD file")?;
             println!("Initialized git directory");
         }
     }
+    Ok(())
 }

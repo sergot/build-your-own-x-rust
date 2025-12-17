@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- [ ] git init
+- [x] git init
 - [ ] git hash-object
 - [ ] git cat-file
 - [ ] git ls-tree

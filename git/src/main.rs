@@ -69,30 +69,18 @@ fn main() -> anyhow::Result<()> {
             let Some((kind, size)) = header.split_once(' ') else {
                 anyhow::bail!("wrong header: {header}");
             };
-            let kind = match kind {
+            let _kind = match kind {
                 "blob" => Kind::Blob,
                 _ => anyhow::bail!("{kind} not supported yet"),
             };
             let size = size
-                .parse::<usize>()
+                .parse::<u64>()
                 .context(format!("git object file has an invalid size: {size}"))?;
 
-            buf.clear();
-            buf.resize(size, 0);
-            z.read_exact(&mut buf[..])
-                .context("read contents of git object file")?;
-            let n = z
-                .read(&mut [0])
-                .context("validate EOF in git object file")?;
-            anyhow::ensure!(n == 0, "git object file had {n} trailing bytes");
+            let mut z = z.take(size);
             let stdout = std::io::stdout();
             let mut stdout = stdout.lock();
-
-            match kind {
-                Kind::Blob => stdout
-                    .write_all(&buf)
-                    .context("write git object's content to stdout")?,
-            }
+            std::io::copy(&mut z, &mut stdout).context("write git object file to stdout")?;
         }
     }
 

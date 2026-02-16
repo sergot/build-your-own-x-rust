@@ -3,8 +3,8 @@
 ## Roadmap
 
 - [x] git init
-- [ ] git hash-object
-- [ ] git cat-file
+- [x] git hash-object
+- [x] git cat-file
 - [ ] git ls-tree
 - [ ] git commit
 - [ ] git clone

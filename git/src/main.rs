@@ -1,7 +1,6 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use std::fs;
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 pub(crate) mod commands;
 
@@ -50,7 +49,7 @@ fn main() -> anyhow::Result<()> {
             commands::cat_file::invoke(pretty_print, &object_hash)?;
         }
         Command::HashObject { write, file } => {
-            let hash = commands::hash_object::invoke(write, file)?;
+            let hash = commands::hash_object::invoke(write, &file)?;
             println!("{hash}");
         }
     }

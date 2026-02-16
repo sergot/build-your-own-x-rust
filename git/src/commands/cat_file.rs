@@ -1,25 +1,20 @@
+use crate::utils::find_git_dir;
 use crate::Kind;
 use anyhow::Context;
 use flate2::read::ZlibDecoder;
 use std::ffi::CStr;
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::process::Command as StdCommand;
 
 pub(crate) fn invoke(pretty_print: bool, object_hash: &str) -> anyhow::Result<()> {
     anyhow::ensure!(pretty_print, "only -p supported");
-    let git_dir_cmd = StdCommand::new("git")
-        .arg("rev-parse")
-        .arg("--git-dir")
-        .output()
-        .expect("we should be in a git repo");
-    let output = String::from_utf8_lossy(&git_dir_cmd.stdout);
-    let git_dir = output.trim();
-    let f = std::fs::File::open(format!(
-        "{git_dir}/objects/{}/{}",
-        &object_hash[..2],
-        &object_hash[2..]
-    ))
+    let git_dir = find_git_dir().context("can't find git repository")?;
+    let f = std::fs::File::open(
+        git_dir
+            .join("objects")
+            .join(&object_hash[..2])
+            .join(&object_hash[2..]),
+    )
     .context("open a .git/objects file")?;
 
     let z = ZlibDecoder::new(f);

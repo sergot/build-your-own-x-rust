@@ -3,19 +3,14 @@ use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use sha1::{Digest, Sha1};
 use std::io::prelude::*;
-use std::path::{Path, PathBuf};
-use std::process::Command as StdCommand;
+use std::path::Path;
+
+use crate::utils::find_git_dir;
 
 pub(crate) fn invoke(write: bool, file: &Path) -> anyhow::Result<String> {
     anyhow::ensure!(write, "please use -w");
     let kind = "blob";
-    let git_dir_cmd = StdCommand::new("git")
-        .arg("rev-parse")
-        .arg("--git-dir")
-        .output()
-        .expect("we should be in a git repo");
-    let output = String::from_utf8_lossy(&git_dir_cmd.stdout);
-    let git_dir = output.trim();
+    let git_dir = find_git_dir().context("can't find a git repository")?;
 
     let size = std::fs::metadata(file).context("stat source file")?.len();
 
@@ -36,7 +31,7 @@ pub(crate) fn invoke(write: bool, file: &Path) -> anyhow::Result<String> {
     let hash = hashing_writer.hasher.finalize();
     let hash = hex::encode(hash);
 
-    let objects_path = PathBuf::from(git_dir).join("objects").join(&hash[..2]);
+    let objects_path = git_dir.join("objects").join(&hash[..2]);
 
     std::fs::create_dir_all(&objects_path).context("create git objects dir")?;
     std::fs::rename(tmp, objects_path.join(&hash[2..])).context("move tmp file")?;

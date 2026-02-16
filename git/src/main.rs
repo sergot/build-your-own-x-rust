@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 use std::{fs, path::PathBuf};
 
 pub(crate) mod commands;
+pub(crate) mod utils;
 
 #[derive(Parser, Debug)]
 #[command()]
